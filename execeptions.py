@@ -1,0 +1,2 @@
+class TileCoordinateError(Exception):
+    pass
