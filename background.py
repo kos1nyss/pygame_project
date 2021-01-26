@@ -7,7 +7,8 @@ from bg_cell import BgCell
 class Background:
     def __init__(self):
         self.table = []
-        self.color = pygame.Color(40, 40, 40)
+        k = 40
+        self.color = pygame.Color(k, k, k)
         self.create()
 
     def create_color(self):

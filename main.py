@@ -14,6 +14,34 @@ from text import Text
 from shadows import Shadow
 from enemy import Enemy
 from shield import Shield
+from pause import Pause
+from score import Score
+from lost_game_screen import LostGameScreen
+
+
+def restart_game():
+    global development_mode, mouse_rb_click_position, background, score, camera, \
+        game_map, player, fps_text, pause, full_time, lost_game_screen, scene
+    development_mode = False
+    mouse_rb_click_position = None
+
+    background = Background()
+    scene = Scene()
+    camera = Camera((0, 0))
+    game_map = GameMap(scene)
+    player = Player(scene, game_map)
+    player.set_ability(Shield(scene, player))
+    fps_text = Text(25)
+    pause = Pause()
+    score = Score(75)
+    lost_game_screen = LostGameScreen()
+
+    player.set_coord(game_map.get_start_player_pos())
+    camera.look_at(player)
+    camera.set_target(player)
+
+    full_time = time.time()
+
 
 development_mode = False
 mouse_rb_click_position = None
@@ -28,6 +56,9 @@ game_map = GameMap(scene)
 player = Player(scene, game_map)
 player.set_ability(Shield(scene, player))
 fps_text = Text(25)
+pause = Pause()
+score = Score(75)
+lost_game_screen = LostGameScreen()
 
 player.set_coord(game_map.get_start_player_pos())
 camera.look_at(player)
@@ -44,40 +75,46 @@ while True:
         if event.type == pygame.QUIT:
             terminate()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == pygame.BUTTON_RIGHT:
-                mouse_rb_click_position = pygame.mouse.get_pos()
-                if not development_mode:
-                    player.use_ability()
-            if event.button == pygame.BUTTON_LEFT:
-                player.gun.punch()
+            if not pause.get_active():
+                if event.button == pygame.BUTTON_RIGHT:
+                    mouse_rb_click_position = pygame.mouse.get_pos()
+                    if not development_mode:
+                        player.use_ability()
+                if event.button == pygame.BUTTON_LEFT:
+                    player.gun.punch()
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_F1:
-                development_mode = not development_mode
-                if not development_mode:
-                    camera.look_at(camera.get_target())
-            if event.key == pygame.K_SPACE:
-                player.jump()
-            if event.key == pygame.K_e:
-                player.use_ability()
-            if event.key == pygame.K_q:
-                player.gun.punch()
+            if not pause.get_active():
+                if event.key == pygame.K_F1 and not pause.get_active():
+                    development_mode = not development_mode
+                    if not development_mode:
+                        camera.look_at(camera.get_target())
+                if event.key == pygame.K_SPACE:
+                    player.jump()
+                if event.key == pygame.K_e:
+                    player.use_ability()
+                if event.key == pygame.K_q:
+                    player.gun.punch()
+            if event.key == pygame.K_f and player.is_alive():
+                pause.switch()
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_a]:
-        player.move_aside(-1, FPS)
-    if keys[pygame.K_d]:
-        player.move_aside(1, FPS)
+    if not pause.get_active():
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a]:
+            player.move_aside(-1, FPS)
+        if keys[pygame.K_d]:
+            player.move_aside(1, FPS)
 
-    for obj in scene.get_objects():
-        if not isinstance(obj, Enemy) and not isinstance(obj, Shadow):
-            obj.update(FPS)
-    for obj in scene.get_objects():
-        if isinstance(obj, Enemy):
-            obj.update(FPS)
-            obj.update_target(player)
-    for obj in scene.get_objects():
-        if isinstance(obj, Shadow):
-            obj.update(FPS)
+    if not pause.get_active():
+        for obj in scene.get_objects():
+            if not isinstance(obj, Enemy) and not isinstance(obj, Shadow):
+                obj.update(FPS)
+        for obj in scene.get_objects():
+            if isinstance(obj, Enemy):
+                obj.update(FPS)
+                obj.update_target(player)
+        for obj in scene.get_objects():
+            if isinstance(obj, Shadow):
+                obj.update(FPS)
 
     game_map.update(player)
 
@@ -108,10 +145,23 @@ while True:
         if obj.active:
             obj.draw(screen)
 
-    if development_mode:
-        pygame.draw.rect(screen, "white", fps_text.rect_image)
+    if development_mode and not pause.get_active():
         fps_text.create(str(int(FPS)), (10, 10), (0, 0, 0))
+        pygame.draw.rect(screen, "white", fps_text.rect_image)
         fps_text.draw(screen)
+
+    if pause.get_active():
+        pause.draw(screen)
+    else:
+        score.set_score(player.get_kills())
+        score.draw(screen)
+
+    if not player.is_alive():
+        if lost_game_screen.time < lost_game_screen.cd:
+            lost_game_screen.update(FPS)
+        else:
+            restart_game()
+
     pygame.display.flip()
 
     try:

@@ -2,9 +2,10 @@ import pygame
 from objects import Object
 from tiles import *
 from constants import *
-from enemy import Enemy
+from blue_cube_enemy import *
 from chunks import chunks
 from random import choice
+from guns import Sword
 
 
 class Chunk(Object):
@@ -47,9 +48,9 @@ class Chunk(Object):
                 else:
                     new_tile = Chunk.tile_from_character[c](self.scene, coord)
                     self.tiles[-1].append(new_tile)
-        e = randint(1, len(en_pos))
+        e = randint(2, len(en_pos))
         while e:
-            new_enemy = Enemy(self.get_scene(), self.game_map)
+            new_enemy = BlueCubeEnemy(self.get_scene(), self.game_map)
             new_enemy.set_coord(en_pos.pop())
             self.enemies.append(new_enemy)
             e -= 1

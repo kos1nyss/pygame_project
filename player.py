@@ -8,6 +8,7 @@ from guns import Sword
 
 class Player(Entity):
     def __init__(self, scene, game_map):
+        self.hp = 300
         super().__init__(scene, game_map)
         self.set_sprite(stand_animations[0][0])
         self.shadow_time = 0
@@ -92,3 +93,7 @@ class Player(Entity):
                      self.get_coord()[1] - 1.4))
                 self.ability_cd_slider.set_value(self.ability.cd_time)
         super().update_ui()
+
+    def dead(self):
+        super().dead()
+        self.scene.remove(self.ability_cd_slider)

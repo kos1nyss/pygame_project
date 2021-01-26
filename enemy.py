@@ -9,20 +9,15 @@ from random import randint
 class Enemy(Entity):
     def __init__(self, scene, game_map):
         super().__init__(scene, game_map)
-        self.image = pygame.Surface((64, 64))
-        self.image.fill(pygame.Color(randint(15, 35), randint(15, 35), randint(92, 112)))
-        self.rect = self.image.get_rect()
-        self.w, self.h = self.rect.w / TILE_SIZE, self.rect.h / TILE_SIZE
-
         self.chunk_n = None
         self.target = None
 
-        self.speed_aside = 5
-        self.jump_power = 15
+        self.speed_aside = 0
+        self.jump_power = 0
 
     def update(self, fps):
         super().update(fps)
-        if self.target:
+        if self.target and self.target.is_alive():
             self.move_to_target(fps)
         self.update_chunk()
 
@@ -47,8 +42,9 @@ class Enemy(Entity):
             self.target = None
 
     def move_to_target(self, fps):
-        rad = atan2(self.target.get_coord()[1] - self.get_coord()[1],
-                    self.target.get_coord()[0] - self.get_coord()[0])
-        self.move_aside(1 if cos(rad) > 0 else -1, fps)
-        if self.dy >= 0 and sin(rad) < -0.5:
-            self.jump()
+            rad = atan2(self.target.get_coord()[1] - self.get_coord()[1],
+                        self.target.get_coord()[0] - self.get_coord()[0])
+            if abs(self.get_coord()[0] - self.target.get_coord()[0]) > 0.1:
+                self.move_aside(1 if cos(rad) > 0 else -1, fps)
+            if self.dy >= 0 and sin(rad) < -0.5:
+                self.jump()

@@ -13,7 +13,9 @@ class MeleeGun(Gun):
         self.parent = parent
         super().__init__(scene)
         self.set_coord((0, 0))
+        self.power = 0
 
+        self.active = False
         self.animation_is_active = False
         self.source_image = None
         self.delta_rotate = -180
@@ -38,6 +40,8 @@ class MeleeGun(Gun):
         self.angle = self.min_angle
 
     def update(self, fps):
+        if not self.parent.is_alive():
+            return
         self.active = self.animation_is_active
         if self.animation_is_active:
             self.update_angle(fps)
@@ -81,7 +85,6 @@ class MeleeGun(Gun):
         elif self.dir == -1:
             self.angle = self.min_angle
         self.dir = -self.dir
-        self.animation_is_active = False
 
         self.prev_angle += self.delta_rotate
         self.angle += self.delta_rotate
@@ -97,16 +100,18 @@ class MeleeGun(Gun):
                 continue
             if en is self.parent:
                 continue
-
-            if en not in self.damaged:
-                segments = 5
-                for i in range(segments):
-                    r = (self.r + self.source_image.get_size()[1] / TILE_SIZE / 1.5) * i / segments
-                    x = self.parent.get_coord()[0] + self.parent.w / 2 + cos(self.angle) * r
-                    y = self.parent.get_coord()[1] - self.parent.h / 2 + sin(self.angle) * r
-                    if en.get_coord()[0] <= x <= en.get_coord()[0] + en.w and \
-                            en.get_coord()[1] - en.h <= y <= en.get_coord()[1]:
-                        en.add_power((cos(self.angle) * 5, sin(self.angle) * 5 - 2))
-                        en.get_damage(self.get_damage())
-                        self.damaged.append(en)
-                        break
+            if en in self.damaged:
+                continue
+            segments = 5
+            for i in range(segments):
+                r = (self.r + self.source_image.get_size()[1] / TILE_SIZE / 1.5) * i / segments
+                x = self.parent.get_coord()[0] + self.parent.w / 2 + cos(self.angle) * r
+                y = self.parent.get_coord()[1] - self.parent.h / 2 + sin(self.angle) * r
+                if en.get_coord()[0] <= x <= en.get_coord()[0] + en.w and \
+                        en.get_coord()[1] - en.h <= y <= en.get_coord()[1]:
+                    en.add_power((cos(self.angle) * self.power, sin(self.angle) * self.power - 2))
+                    en.get_damage(self.get_damage())
+                    if not en.is_alive():
+                        self.parent.add_kill()
+                    self.damaged.append(en)
+                    break

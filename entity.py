@@ -10,8 +10,6 @@ from constants import TILE_SIZE
 class Entity(ObjectWithPhysics):
     def __init__(self, scene, game_map):
         super().__init__(scene, game_map)
-        self.hp = 100
-
         self.rotate = 1
 
         self.speed_aside = 0
@@ -24,6 +22,7 @@ class Entity(ObjectWithPhysics):
         self.animation_time = 0
 
         self.gun = None
+        self.kills = 0
 
         self.hp_slider = SliderObject(self.get_scene(), (0.8, 0.1))
         self.hp_slider.set_maximum(self.hp)
@@ -80,7 +79,7 @@ class Entity(ObjectWithPhysics):
             self.hp_slider.active = False
 
     def get_damage(self, damage):
-        if self.hp <= damage:
+        if self.hp < damage:
             damage = self.hp
             color = pygame.Color(randint(115, 125), randint(46, 56), randint(176, 186))
         else:
@@ -94,10 +93,19 @@ class Entity(ObjectWithPhysics):
 
         self.hp -= damage
         if self.hp <= 0:
-            self.set_sprite(load_image("grave.png"))
+            self.dead()
+
+    def dead(self):
+        self.set_sprite(load_image("grave.png"))
+        self.scene.remove(self.gun)
+        self.scene.remove(self.hp_slider)
 
     def delete(self):
-        self.scene.remove(self.hp_slider)
         self.scene.remove(self)
-        if self.gun:
-            self.scene.remove(self.gun)
+        self.dead()
+
+    def add_kill(self):
+        self.kills += 1
+
+    def get_kills(self):
+        return self.kills

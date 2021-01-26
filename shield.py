@@ -19,7 +19,7 @@ class Shield(Ability):
         self.pause_time = 0
         self.is_growing = False
 
-        self.power = 7
+        self.power = 15
         self.pushed = []
 
         self.cool_down = 0.1

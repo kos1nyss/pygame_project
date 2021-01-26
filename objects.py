@@ -119,3 +119,16 @@ class ObjectWithPhysics(ObjectWithMove):
             self.acceleration[0] = delta[0] / self.mass
         if delta[1]:
             self.acceleration[1] = delta[1] / self.mass
+
+    def move(self, delta):
+        if delta[0]:
+            if self.move_is_possible((delta[0], 0)):
+                super().move((delta[0], 0))
+            else:
+                self.acceleration[0] = 0
+
+        if delta[1]:
+            if self.move_is_possible((0, delta[1])):
+                super().move((0, delta[1]))
+            else:
+                self.acceleration[1] = 0
