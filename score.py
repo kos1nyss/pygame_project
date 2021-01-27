@@ -10,8 +10,4 @@ class Score(Text):
         self.set_score(0)
 
     def set_score(self, score):
-        self.create(str(score), self.coord, self.color)
-
-    def create(self, text, coord, color):
-        self.text_image = self.font.render(text, False, color)
-        self.rect_image = self.text_image.get_rect(center=coord)
+        self.create(str(score), self.coord, self.color, center=True)

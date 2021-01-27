@@ -8,9 +8,12 @@ class Text:
         self.rect_image = None
         self.font = pygame.font.Font(path.join("data", "fonts", "kongtext.ttf"), size)
 
-    def create(self, text, coord, color):
+    def create(self, text, coord, color, center=True):
         self.text_image = self.font.render(text, False, color)
-        self.rect_image = self.text_image.get_rect(topleft=coord)
+        if center:
+            self.rect_image = self.text_image.get_rect(center=coord)
+        else:
+            self.rect_image = self.text_image.get_rect(topleft=coord)
 
     def draw(self, sf):
         sf.blit(self.text_image, self.rect_image)

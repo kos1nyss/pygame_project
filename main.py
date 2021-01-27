@@ -19,9 +19,13 @@ from score import Score
 from lost_game_screen import LostGameScreen
 
 
+def start_screen():
+    pass
+
+
 def restart_game():
     global development_mode, mouse_rb_click_position, background, score, camera, \
-        game_map, player, fps_text, pause, full_time, lost_game_screen, scene
+        game_map, player, fps_text, pause, full_time, lost_game_screen, scene, first_touch
     development_mode = False
     mouse_rb_click_position = None
 
@@ -41,13 +45,13 @@ def restart_game():
     camera.set_target(player)
 
     full_time = time.time()
+    first_touch = False
 
+
+screen = game_init.get_screen()
 
 development_mode = False
 mouse_rb_click_position = None
-
-screen = game_init.get_screen()
-FPS = 1000
 
 background = Background()
 scene = Scene()
@@ -60,10 +64,16 @@ pause = Pause()
 score = Score(75)
 lost_game_screen = LostGameScreen()
 
+first_touch_text = Text(20)
+first_touch_text.create("press any key to start...", (WIDTH // 2, HEIGHT // 2 + 200), "white",
+                        center=True)
+
 player.set_coord(game_map.get_start_player_pos())
 camera.look_at(player)
 camera.set_target(player)
 
+FPS = 1000
+first_touch = False
 full_time = time.time()
 while True:
     for obj in scene.get_objects():
@@ -82,6 +92,7 @@ while True:
                         player.use_ability()
                 if event.button == pygame.BUTTON_LEFT:
                     player.gun.punch()
+            first_touch = True
         if event.type == pygame.KEYDOWN:
             if not pause.get_active():
                 if event.key == pygame.K_F1 and not pause.get_active():
@@ -94,8 +105,9 @@ while True:
                     player.use_ability()
                 if event.key == pygame.K_q:
                     player.gun.punch()
-            if event.key == pygame.K_f and player.is_alive():
+            if event.key == pygame.K_f and player.is_alive() and first_touch:
                 pause.switch()
+            first_touch = True
 
     if not pause.get_active():
         keys = pygame.key.get_pressed()
@@ -111,7 +123,8 @@ while True:
         for obj in scene.get_objects():
             if isinstance(obj, Enemy):
                 obj.update(FPS)
-                obj.update_target(player)
+                if first_touch:
+                    obj.update_target(player)
         for obj in scene.get_objects():
             if isinstance(obj, Shadow):
                 obj.update(FPS)
@@ -149,6 +162,9 @@ while True:
         fps_text.create(str(int(FPS)), (10, 10), (0, 0, 0))
         pygame.draw.rect(screen, "white", fps_text.rect_image)
         fps_text.draw(screen)
+
+    if not first_touch:
+        first_touch_text.draw(screen)
 
     if pause.get_active():
         pause.draw(screen)
