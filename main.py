@@ -159,7 +159,7 @@ while True:
             obj.draw(screen)
 
     if development_mode and not pause.get_active():
-        fps_text.create(str(int(FPS)), (10, 10), (0, 0, 0))
+        fps_text.create(str(int(FPS)), (10, 10), (0, 0, 0), center=False)
         pygame.draw.rect(screen, "white", fps_text.rect_image)
         fps_text.draw(screen)
 
